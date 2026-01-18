@@ -79,7 +79,7 @@ make restart
 
 Si el entorno de ejecución no dispone de la herramienta make, los scripts pueden ejecutarse manualmente desde el directorio setup/, en el orden que resulte conveniente para la actividad.
 
-##Uso del Makefile
+## Uso del Makefile
 
 El Makefile actúa como una capa de abstracción sobre los scripts del SUT, permitiendo un control uniforme del ciclo de vida del sistema. Su uso reduce errores operativos, facilita la repetibilidad de los experimentos y estandariza la ejecución entre los integrantes del equipo.
 
@@ -89,13 +89,13 @@ Para visualizar todos los comandos disponibles:
 make help
 ```
 
-##Consideraciones de Uso
+## Consideraciones de Uso
 
 El SUT se utiliza exclusivamente como sistema de referencia para la ejecución de pruebas y análisis de calidad. No se contempla la modificación de su código fuente, con el objetivo de preservar la reproducibilidad y la comparabilidad de los resultados obtenidos.
 
 Cualquier incidencia durante la ejecución deberá documentarse en el directorio correspondiente de evidencias o memorándums, según aplique.
 
-##Miembros del Equipo
+## Miembros del Equipo
 
 - Kenji Kawaida Villegas
 - Windsor Alvarez Davila
