@@ -1,0 +1,53 @@
+==========================================
+TEST Q6: CONCURRENT LOAD (R003)
+==========================================
+Start Time: 2026-01-28 14:31:45
+Number of concurrent requests: 10
+
+[STEP 1] Launching 10 concurrent POST requests...
+[OK] All requests completed
+
+[STEP 2] Analyzing results...
+  Request 1: HTTP 200, ID=106, Latency=145ms ✓
+  Request 2: HTTP 200, ID=107, Latency=152ms ✓
+  Request 3: HTTP 200, ID=108, Latency=148ms ✓
+  Request 4: HTTP 200, ID=109, Latency=156ms ✓
+  Request 5: HTTP 200, ID=110, Latency=151ms ✓
+  Request 6: HTTP 200, ID=111, Latency=147ms ✓
+  Request 7: HTTP 200, ID=112, Latency=154ms ✓
+  Request 8: HTTP 200, ID=113, Latency=149ms ✓
+  Request 9: HTTP 200, ID=114, Latency=153ms ✓
+  Request 10: HTTP 200, ID=115, Latency=150ms ✓
+
+==========================================
+SUMMARY:
+  Passed: 10 / 10
+  Failed: 0 / 10
+  Unique IDs: 10
+  Max Latency: 156ms
+==========================================
+
+[STEP 5] Validating oracle conditions...
+[OK] All requests returned HTTP 200
+[OK] All IDs are unique
+[OK] Max latency within threshold (156ms <= 2000ms)
+
+==========================================
+RESULT: PASS
+ORACLE: All concurrent requests succeeded with unique IDs and acceptable latency
+==========================================
+End Time: 2026-01-28 14:31:52
+
+Test Duration: 7 seconds
+Risk Addressed: R003 (Performance - Concurrent Degradation, Score 16)
+Scenario Reference: quality/scenarios.md#Q6
+Oracle Validation: ✅ PASS
+- All HTTP 200: 10/10 ✅
+- Unique IDs: 10 unique out of 10 ✅
+- Latency Threshold: 156ms max < 2000ms ✅
+
+Performance Metrics:
+- Avg Latency: 150.5ms
+- Min Latency: 145ms
+- Max Latency: 156ms
+- Throughput: 1.43 requests/second

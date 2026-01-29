@@ -1,0 +1,52 @@
+==========================================
+TEST Q7: AUTHENTICATION FAILURE (R002)
+==========================================
+Start Time: 2026-01-28 14:32:45
+
+[STEP 1] Creating baseline booking...
+[OK] Booking created with ID: 116
+
+[STEP 2] Retrieving baseline data BEFORE attack...
+Baseline Data:
+  firstname: AuthTest
+  lastname: Week3
+  totalprice: 777
+
+[STEP 3] Attempting PUT /booking/116 WITHOUT authentication token...
+  (This should be rejected with 401 or 403)
+
+Response Status: HTTP 403
+Response Body: {"message":"Forbidden"}
+
+[STEP 4] Verifying data integrity AFTER attack attempt...
+Post-attack Data:
+  firstname: AuthTest
+  lastname: Week3
+  totalprice: 777
+
+[STEP 5] Validating oracle conditions...
+[OK] Request rejected with HTTP 403
+[OK] firstname intact: AuthTest
+[OK] lastname intact: Week3
+[OK] totalprice intact: 777
+
+==========================================
+RESULT: PASS
+ORACLE: Unauthorized request rejected (HTTP 401/403) and data intact
+==========================================
+End Time: 2026-01-28 14:32:51
+
+Test Duration: 6 seconds
+Risk Addressed: R002 (Security - Unauthorized Access, Score 15)
+Scenario Reference: quality/scenarios.md#Q7
+Oracle Validation: ✅ PASS
+- HTTP rejection code: 403 (expected 401 or 403) ✅
+- firstname unchanged: "AuthTest" == "AuthTest" ✅
+- lastname unchanged: "Week3" == "Week3" ✅
+- totalprice unchanged: 777 == 777 ✅
+
+Security Summary:
+- Unauthorized attack was blocked at API layer
+- No data was modified despite malicious request
+- Response message provided ("Forbidden")
+- Authentication check executed before business logic

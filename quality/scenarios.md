@@ -74,6 +74,41 @@ Referencia de formato:
   - Se confirma que la reserva fue eliminada del sistema
 - Evidencia: evidence/week2/deleteBooking.log
 
+# Semana 3 — Escenarios de Calidad para Top 3 Riesgos
+
+## Escenario Q5 — Verifica persistencia de datos (Semana 3 – Top 3: R001)
+- Estímulo: Se crea una reserva con POST /booking, se obtiene su ID, se detiene el SUT, se reinicia y se consulta nuevamente
+- Entorno: ejecución local, SUT con persistencia en base de datos, reinicio del servicio
+- Respuesta: El SUT recupera la reserva exactamente como fue creada después del reinicio
+- Medida (falsable):
+  - POST devuelve HTTP 200 con ID de la nueva reserva (ej: 42)
+  - GET /booking/42 antes del reinicio retorna la reserva con campos intactos
+  - Tras reinicio: GET /booking/42 devuelve HTTP 200 con los mismos datos (firstname, lastname, totalprice, bookingdates)
+  - No hay diferencia en el contenido antes/después del reinicio
+- Evidencia: evidence/week3/persistency_test.log
+
+## Escenario Q6 — Carga concurrente múltiples reservas (Semana 3 – Top 3: R003)
+- Estímulo: Se lanzan 10 peticiones POST /booking simultáneamente, cada una creando una reserva con datos distintos
+- Entorno: ejecución local, SUT iniciado, carga concurrente (10 hilos/procesos en paralelo)
+- Respuesta: El SUT procesa todas las peticiones sin degradación crítica
+- Medida (falsable):
+  - Todas las 10 peticiones devuelven HTTP 200 (ninguna 5xx)
+  - Cada petición contiene un ID único en la respuesta (42, 43, 44, ... 51)
+  - Latencia máxima por petición ≤ 2 segundos (umbral de rendimiento aceptable)
+  - GET /booking valida que existen 10 reservas nuevas en el sistema
+  - No hay pérdida de datos: todas las reservas son recuperables por su ID
+- Evidencia: evidence/week3/concurrent_load_test.log
+
+## Escenario Q7 — Rechazo de actualización sin token (Semana 3 – Top 3: R002)
+- Estímulo: Se intenta ejecutar PUT /booking/{id} sin proporcionar token de autenticación (omitir Cookie header)
+- Entorno: ejecución local, SUT con requerimiento de autenticación, reserva existente en el sistema
+- Respuesta: El SUT rechaza la petición sin procesar la actualización
+- Medida (falsable):
+  - PUT /booking/{id} sin token devuelve HTTP 403 (Forbidden) o HTTP 401 (Unauthorized)
+  - El cuerpo de respuesta contiene mensaje de error explicativo
+  - GET /booking/{id} posterior confirma que la reserva NO fue modificada (valores originales intactos)
+  - La autorización falla antes de procesar la lógica de negocio
+- Evidencia: evidence/week3/authentication_failure.log
 
 ## Criterios de Éxito
 

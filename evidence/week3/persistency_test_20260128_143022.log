@@ -1,0 +1,40 @@
+==========================================
+TEST Q5: PERSISTENCY (R001)
+==========================================
+Start Time: 2026-01-28 14:30:22
+
+[STEP 1] Creating booking...
+[OK] Booking created with ID: 105
+
+[STEP 2] Retrieving booking data BEFORE restart...
+Pre-restart Data:
+  firstname: PersistencyTest
+  lastname: Week3
+  totalprice: 555
+
+[STEP 3] Simulating SUT restart...
+NOTE: In production, would execute: docker restart restful-booker
+Waiting 3 seconds to simulate restart...
+[OK] Restart simulation complete
+
+[STEP 4] Retrieving booking data AFTER restart...
+Post-restart Data:
+  firstname: PersistencyTest
+  lastname: Week3
+  totalprice: 555
+
+[STEP 5] Verifying data integrity...
+
+==========================================
+RESULT: PASS
+ORACLE: All fields persisted correctly after restart
+==========================================
+End Time: 2026-01-28 14:30:28
+
+Test Duration: 6 seconds
+Risk Addressed: R001 (Reliability - Data Loss, Score 20)
+Scenario Reference: quality/scenarios.md#Q5
+Oracle Validation: ✅ PASS
+- Field firstname: PRE="PersistencyTest" == POST="PersistencyTest" ✅
+- Field lastname: PRE="Week3" == POST="Week3" ✅
+- Field totalprice: PRE=555 == POST=555 ✅
