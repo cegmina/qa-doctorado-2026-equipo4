@@ -1,0 +1,28 @@
+Resumen de Ejecución de Pruebas Sistemáticas
+=============================================
+Endpoint: GET /booking/{id}
+Fecha de Ejecución: 2026-02-04 22:21:06
+
+Total de Casos: 15
+Aprobados: 13
+Reprobados: 0
+Ambiguos: 2
+
+Tasa de Aprobación: 86.67%
+
+Resultados por Caso:
+TC-001|PASS|ID=1, HTTP 200, JSON válido, campos requeridos presentes
+TC-002|PASS|ID=5, HTTP 200, JSON válido
+TC-003|PASS|ID=10, HTTP 200, datos íntegros
+TC-004|PASS|ID=0, HTTP 404 (error esperado)
+TC-005|PASS|ID=-1, HTTP 404 (error esperado)
+TC-006|PASS|ID=99999, HTTP 404 (no encontrado)
+TC-007|PASS|ID=999999999, HTTP 404 (error esperado)
+TC-008|PASS|ID=abc, HTTP 404 (error esperado)
+TC-009|AMBIGUOUS|ID=(vacío), HTTP 200 (comportamiento SUT-específico)
+TC-010|PASS|ID=null, HTTP 404 (error esperado)
+TC-011|AMBIGUOUS|ID=12.5, HTTP 200 (comportamiento SUT-específico)
+TC-012|PASS|ID=1, fechas coherentes (checkin < checkout)
+TC-013|PASS|ID=2, firstname y lastname son strings no vacíos
+TC-014|PASS|ID=3, totalprice es número válido
+TC-015|PASS|ID=4, depositpaid es booleano válido
