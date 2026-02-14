@@ -117,19 +117,27 @@ fi
 # ---------------------------------------------------------------------------
 # CHECK 2: Persistencia de datos (R001 / Q5)
 # Oracle: GET /booking/{id} HTTP 200 + JSON con campos obligatorios
-# Tras Check 4, existen bookings 1-10 creados por systematic_cases
+# Resiliente: probar 1, luego primer ID de /booking, luego POST si existe
 # ---------------------------------------------------------------------------
 echo "" >> "${RUNLOG}"
 echo "### Check 2: Persistencia (R001/Q5)" >> "${RUNLOG}"
 
-RESP2=$(curl -sS -w "\n%{http_code}" -m 10 "${BASE_URL}/booking/1" 2>/dev/null)
+RESP2=$(curl -sS -w "\n%{http_code}" -m 15 "${BASE_URL}/booking/1" 2>/dev/null)
 HTTP2_TMP=$(echo "${RESP2}" | tail -n 1)
 if [ "${HTTP2_TMP}" = "404" ] || [ "${HTTP2_TMP}" = "000" ]; then
-  CREATE_PERS=$(curl -sS -X POST "${BASE_URL}/booking" -H "Content-Type: application/json" \
-    -d '{"firstname":"PersistGate","lastname":"Week5","totalprice":100,"depositpaid":true,"bookingdates":{"checkin":"2017-12-31","checkout":"2018-12-31"}}' 2>/dev/null)
-  BID=$(echo "${CREATE_PERS}" | jq -r '.bookingid // empty' 2>/dev/null)
+  # Intentar obtener primer ID desde GET /booking (API pública puede tener IDs distintos)
+  BOOKINGS_JSON=$(curl -sS -m 15 "${BASE_URL}/booking" 2>/dev/null || echo "[]")
+  BID=$(echo "${BOOKINGS_JSON}" | jq -r 'if type == "array" and length > 0 then .[0].bookingid else empty end' 2>/dev/null)
   if [ -n "${BID}" ] && [ "${BID}" != "null" ]; then
-    RESP2=$(curl -sS -w "\n%{http_code}" -m 10 "${BASE_URL}/booking/${BID}" 2>/dev/null)
+    RESP2=$(curl -sS -w "\n%{http_code}" -m 15 "${BASE_URL}/booking/${BID}" 2>/dev/null)
+  else
+    # Fallback: crear booking
+    CREATE_PERS=$(curl -sS -X POST "${BASE_URL}/booking" -H "Content-Type: application/json" \
+      -d '{"firstname":"PersistGate","lastname":"Week5","totalprice":100,"depositpaid":true,"bookingdates":{"checkin":"2017-12-31","checkout":"2018-12-31"}}' 2>/dev/null)
+    BID=$(echo "${CREATE_PERS}" | jq -r '.bookingid // empty' 2>/dev/null)
+    if [ -n "${BID}" ] && [ "${BID}" != "null" ]; then
+      RESP2=$(curl -sS -w "\n%{http_code}" -m 15 "${BASE_URL}/booking/${BID}" 2>/dev/null)
+    fi
   fi
 fi
 HTTP2=$(echo "${RESP2}" | tail -n 1)
@@ -172,15 +180,16 @@ fi
 echo "" >> "${RUNLOG}"
 echo "### Check 3: Rechazo sin auth (R002/Q7)" >> "${RUNLOG}"
 
-# Crear booking para luego intentar PUT sin token
+# Crear booking para luego intentar PUT sin token; si falla, usar primer ID existente
 CREATE_RESP=$(curl -sS -X POST "${BASE_URL}/booking" \
   -H "Content-Type: application/json" \
   -d '{"firstname":"GateAuth","lastname":"Test","totalprice":100,"depositpaid":true,"bookingdates":{"checkin":"2026-02-01","checkout":"2026-02-05"}}' 2>/dev/null)
 BOOKING_ID=$(echo "${CREATE_RESP}" | jq -r '.bookingid // empty' 2>/dev/null)
 
 if [ -z "${BOOKING_ID}" ] || [ "${BOOKING_ID}" = "null" ]; then
-  # Sin booking existente, usar ID 1 para el PUT (puede existir)
-  BOOKING_ID="1"
+  BOOKINGS_JSON=$(curl -sS -m 10 "${BASE_URL}/booking" 2>/dev/null || echo "[]")
+  BOOKING_ID=$(echo "${BOOKINGS_JSON}" | jq -r 'if type == "array" and length > 0 then .[0].bookingid else "1" end' 2>/dev/null)
+  [ -z "${BOOKING_ID}" ] || [ "${BOOKING_ID}" = "null" ] && BOOKING_ID="1"
 fi
 
 PUT_RESP=$(curl -sS -w "\n%{http_code}" -X PUT "${BASE_URL}/booking/${BOOKING_ID}" \

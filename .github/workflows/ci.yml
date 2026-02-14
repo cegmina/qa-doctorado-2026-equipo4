@@ -7,8 +7,6 @@ on:
     branches: ["**"]
 
 env:
-  # API pública de Restful Booker: precargada con 10 bookings, estable para CI
-  # Fuente: https://github.com/mwinteringham/restful-booker
   SUT_BASE_URL: https://restful-booker.herokuapp.com
 
 jobs:
@@ -51,7 +49,19 @@ jobs:
         run: |
           set -e
           make perm 2>/dev/null || chmod +x ci/run_quality_gates.sh scripts/*.sh setup/*.sh
-          make quality-gate
+          for attempt in 1 2 3; do
+            echo "Intento $attempt/3 del quality gate..."
+            if make quality-gate; then
+              echo "Quality gate PASS"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Reintentando en 15s (API pública puede resetear)..."
+              sleep 15
+            fi
+          done
+          echo "Quality gate FAIL tras 3 intentos"
+          exit 1
 
       - name: Subir evidencia como artifact
         if: always()
