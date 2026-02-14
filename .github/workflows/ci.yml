@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: ["**"]
 
+env:
+  # API pública de Restful Booker: precargada con 10 bookings, estable para CI
+  # Fuente: https://github.com/mwinteringham/restful-booker
+  SUT_BASE_URL: https://restful-booker.herokuapp.com
+
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repositorio
@@ -20,62 +25,29 @@ jobs:
           echo "=== Versiones ==="
           uname -a
           make --version 2>/dev/null || true
-          docker --version
-          docker compose version 2>/dev/null || docker-compose --version 2>/dev/null || true
           curl --version | head -1
           bash --version | head -1
+          echo "SUT: ${{ env.SUT_BASE_URL }}"
 
-      - name: Clonar y levantar SUT (Restful Booker)
+      - name: Verificar SUT accesible
         run: |
           set -e
-          git clone --depth 1 https://github.com/mwinteringham/restful-booker.git /tmp/restful-booker
-          cd /tmp/restful-booker
-          docker compose build 2>/dev/null || docker-compose build
-          docker compose up -d 2>/dev/null || docker-compose up -d
-          echo "SUT iniciado en http://localhost:3001"
-
-      - name: Esperar SUT listo
-        run: |
-          set -e
-          SUT_URL="${SUT_BASE_URL:-http://localhost:3001}"
-          SUT_OK=0
-          for i in $(seq 1 30); do
-            if curl -sS -f -m 5 "${SUT_URL}/ping" >/dev/null 2>&1 || curl -sS -f -m 5 "${SUT_URL}/booking" >/dev/null 2>&1; then
-              echo "SUT respondiendo en intento $i"
-              SUT_OK=1
-              break
-            fi
-            echo "Esperando SUT... intento $i/30"
-            sleep 2
-          done
-          if [ "$SUT_OK" = "0" ]; then echo "SUT no respondió"; exit 1; fi
-          echo "Esperando 10s para que MongoDB esté listo..."
-          sleep 10
-
-      - name: Warmup SUT (crear bookings)
-        run: |
-          set -e
-          SUT_URL="${SUT_BASE_URL:-http://localhost:3001}"
-          for i in $(seq 1 20); do
-            RES=$(curl -sS -w "\n%{http_code}" -X POST "${SUT_URL}/booking" \
-              -H "Content-Type: application/json" \
-              -d '{"firstname":"CI","lastname":"Warmup","totalprice":100,"depositpaid":true,"bookingdates":{"checkin":"2017-12-31","checkout":"2018-12-31"}}' 2>/dev/null || echo -e "\n000")
-            CODE=$(echo "$RES" | tail -n1)
-            if [ "$CODE" = "200" ] || [ "$CODE" = "201" ]; then
-              echo "Warmup OK: POST /booking retornó $CODE"
+          for i in 1 2 3 4 5; do
+            if curl -sS -f -m 10 "${{ env.SUT_BASE_URL }}/ping" >/dev/null 2>&1 || \
+               curl -sS -f -m 10 "${{ env.SUT_BASE_URL }}/booking" >/dev/null 2>&1; then
+              echo "SUT respondiendo"
               exit 0
             fi
-            echo "Warmup intento $i/20: HTTP $CODE"
+            echo "Reintento $i/5..."
             sleep 2
           done
-          echo "WARN: POST /booking no respondió 200/201; el gate puede fallar (continuando)"
+          echo "SUT no accesible"
+          exit 1
 
       - name: Ejecutar Quality Gate
         env:
           SKIP_SUT_START: "1"
-          SUT_HOST: localhost
-          SUT_PORT: "3001"
-          BASE_URL: http://localhost:3001
+          BASE_URL: ${{ env.SUT_BASE_URL }}
         run: |
           set -e
           make perm 2>/dev/null || chmod +x ci/run_quality_gates.sh scripts/*.sh setup/*.sh
@@ -88,10 +60,3 @@ jobs:
           name: evidencia-week5
           path: evidence/week5/
           if-no-files-found: warn
-
-      - name: Limpiar SUT
-        if: always()
-        run: |
-          set +e
-          cd /tmp/restful-booker 2>/dev/null && (docker compose down 2>/dev/null || docker-compose down 2>/dev/null) || true
-          docker ps -a -q --filter "name=restful" | xargs -r docker rm -f 2>/dev/null || true
