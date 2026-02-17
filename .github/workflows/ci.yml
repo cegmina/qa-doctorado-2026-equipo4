@@ -7,7 +7,7 @@ on:
     branches: ["**"]
 
 env:
-  SUT_BASE_URL: http://localhost:3001
+  SUT_BASE_URL: https://restful-booker.herokuapp.com
 
 jobs:
   quality-gate:
@@ -17,20 +17,6 @@ jobs:
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
-
-      - name: Clonar SUT (Restful Booker)
-        run: |
-          git clone https://github.com/mwinteringham/restful-booker.git sut
-
-      - name: Construir imagen Docker del SUT
-        run: |
-          cd sut
-          docker build -t restful-booker .
-
-      - name: Levantar SUT
-        run: |
-          docker run -d -p 3001:3001 restful-booker
-          sleep 15
 
       - name: Configurar entorno
         run: |
