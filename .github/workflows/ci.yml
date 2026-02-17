@@ -11,18 +11,26 @@ env:
 
 jobs:
   quality-gate:
-    runs-on: ubuntu-latest
-
-    services:
-      sut:
-        image: markhobson/restful-booker
-        ports:
-          - 3001:3001
+    runs-on: ubuntu-latest    
     timeout-minutes: 10
 
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
+
+      - name: Clonar SUT (Restful Booker)
+        run: |
+          git clone https://github.com/mwinteringham/restful-booker.git sut
+
+      - name: Construir imagen Docker del SUT
+        run: |
+          cd sut
+          docker build -t restful-booker .
+
+      - name: Levantar SUT
+        run: |
+          docker run -d -p 3001:3001 restful-booker
+          sleep 15
 
       - name: Configurar entorno
         run: |
@@ -31,10 +39,7 @@ jobs:
           make --version 2>/dev/null || true
           curl --version | head -1
           bash --version | head -1
-          echo "SUT: ${{ env.SUT_BASE_URL }}"
-
-      - name: Ver contenedores activos
-        run: docker ps
+          echo "SUT: ${{ env.SUT_BASE_URL }}"      
 
       - name: Verificar SUT accesible
         run: |
