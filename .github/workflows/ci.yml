@@ -7,11 +7,17 @@ on:
     branches: ["**"]
 
 env:
-  SUT_BASE_URL: https://restful-booker.herokuapp.com
+  SUT_BASE_URL: http://localhost:3001
 
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+
+    services:
+      sut:
+        image: markhobson/restful-booker
+        ports:
+          - 3001:3001
     timeout-minutes: 10
 
     steps:
