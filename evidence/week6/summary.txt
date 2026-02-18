@@ -1,0 +1,23 @@
+Semana 6 — Resultado del Gaming Drill
+
+Comando base: OUT_DIR=<before|after> BASE_URL=http://localhost:3001 SKIP_SUT_START=1 RELAX_SYSTEMATIC_CHECK=1 bash ./ci/run_quality_gates.sh
+
+BEFORE (sin integridad): rc=0
+- Esperado: el gate puede completar/parecer exitoso aunque se haya debilitado el check de persistencia.
+- Runner: git-bash-exe
+- Carpeta: evidence/week6/before
+
+AFTER (con integridad): rc=1
+- Táctica: Oráculo mínimo obligatorio → evita que el gate pueda ser “relajado” comentando código o ignorando fallos.
+- Runner: validation-only
+- Carpeta: evidence/week6/after
+
+Táctica aplicada:
+- BEFORE: comentar temporalmente el test de persistencia (debilitar oráculo).
+- AFTER: validación anti-gaming por marcadores/evidencia del BEFORE.
+
+Evidencia:
+- evidence/week6/before/RUNLOG.md
+- evidence/week6/before/SUMMARY.md
+- evidence/week6/after/RUNLOG.md
+- evidence/week6/after/SUMMARY.md

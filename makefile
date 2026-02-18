@@ -10,7 +10,7 @@ RUN_SCRIPT := ./run_sut.sh
 STOP_SCRIPT := ./stop_sut.sh
 HEALTH_SCRIPT := ./healthcheck_sut.sh
 
-.PHONY: help up down health restart status logs perm quality-gate
+.PHONY: help up down health restart status logs perm quality-gate gaming-drill
 
 help:
 	@echo "Objetivos disponibles:"
@@ -31,6 +31,7 @@ help:
 	@echo ""
 	@echo "Quality Gate (Semana 5):"
 	@echo "  quality-gate      - Ejecutar quality gate (checks + evidencia en evidence/week5/)"
+	@echo "  gaming-drill      - Ejecutar experimento BEFORE/AFTER en evidence/week6/"
 	@echo ""
 	@echo "Pruebas Legacy:"
 	@echo "  smoke             - Ejecutar pruebas de humo"
@@ -84,3 +85,6 @@ QA-week2: Q1-CreateBooking Q2-GetBookingById Q3-UpdateBooking Q4-DeleteBooking
 
 quality-gate:
 	./ci/run_quality_gates.sh
+
+gaming-drill:
+	bash ./ci/run_gate_gaming_drill.sh
